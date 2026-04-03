@@ -1,4 +1,32 @@
 import { definePlugin, runWorker } from "@paperclipai/plugin-sdk";
+import {
+  getProviderCapability,
+  listProviders,
+  listCertifiedProviders,
+  generateCapabilitySummary
+} from "./connectors/capability-registry.js";
+import {
+  classifyFailure,
+  formatFailureForOperator,
+  requiresImmediateAttention,
+  type FailureClassification
+} from "./connectors/failure-classifier.js";
+import {
+  checkPromotionEligibility,
+  generateCertificationSummary,
+  CERTIFICATION_CRITERIA
+} from "./connectors/certification.js";
+import {
+  generateReconnectPlan,
+  createReconnectPlanFromFailure,
+  formatReconnectPlanForOperator,
+  type ReconnectPlan,
+  type WorkflowContext
+} from "./connectors/reconnect.js";
+import {
+  classifyRateLimit,
+  formatRateLimitForOperator
+} from "./connectors/rate-limit.js";
 
 const plugin = definePlugin({
   async setup(ctx) {
@@ -8,18 +36,129 @@ const plugin = definePlugin({
       ctx.logger.info("Observed issue.created", { issueId });
     });
 
+    // Health check with connector status
     ctx.data.register("health", async () => {
-      return { status: "ok", checkedAt: new Date().toISOString() };
+      const certifiedProviders = listCertifiedProviders();
+      return { 
+        status: "ok", 
+        checkedAt: new Date().toISOString(),
+        certifiedConnectors: certifiedProviders.length
+      };
     });
 
+    // Ping action
     ctx.actions.register("ping", async () => {
       ctx.logger.info("Ping action invoked");
       return { pong: true, at: new Date().toISOString() };
     });
+
+    // Provider capability lookup
+    ctx.data.register("providerCapability", async (args: Record<string, unknown>) => {
+      const providerId = args.providerId as string;
+      const capability = getProviderCapability(providerId);
+      if (!capability) {
+        return { error: `Provider '${providerId}' not found` };
+      }
+      return capability;
+    });
+
+    // List all providers
+    ctx.data.register("listProviders", async () => {
+      return { providers: listProviders() };
+    });
+
+    // List certified providers
+    ctx.data.register("listCertifiedProviders", async () => {
+      const certified = listCertifiedProviders();
+      return { 
+        providers: certified.map(p => ({
+          providerId: p.providerId,
+          displayName: p.displayName,
+          category: p.category,
+          certified: p.certified
+        }))
+      };
+    });
+
+    // Get capability summary for operator display
+    ctx.data.register("capabilitySummary", async (args: Record<string, unknown>) => {
+      const providerId = args.providerId as string;
+      const summary = generateCapabilitySummary(providerId);
+      if (!summary) {
+        return { error: `Provider '${providerId}' not found` };
+      }
+      return { summary };
+    });
+
+    // Classify a connector failure
+    ctx.actions.register("classifyFailure", async (args: Record<string, unknown>) => {
+      const failure = classifyFailure({
+        providerId: args.providerId as string,
+        errorMessage: args.errorMessage as string | undefined,
+        statusCode: args.statusCode as number | undefined,
+        headers: args.headers as Record<string, string> | undefined
+      });
+      return {
+        failure,
+        display: formatFailureForOperator(failure),
+        requiresImmediateAttention: requiresImmediateAttention(failure)
+      };
+    });
+
+    // Check connector promotion eligibility
+    ctx.actions.register("checkPromotionEligibility", async (args: Record<string, unknown>) => {
+      const report = checkPromotionEligibility(
+        args.providerId as string,
+        args.testResults as Record<string, "passed" | "failed" | "pending"> | undefined
+      );
+      return {
+        report,
+        display: generateCertificationSummary(report)
+      };
+    });
+
+    // Generate reconnection plan
+    ctx.actions.register("generateReconnectPlan", async (args: Record<string, unknown>) => {
+      const plan = createReconnectPlanFromFailure({
+        providerId: args.providerId as string,
+        errorMessage: args.errorMessage as string | undefined,
+        statusCode: args.statusCode as number | undefined,
+        headers: args.headers as Record<string, string> | undefined,
+        workflowContext: args.workflowContext as WorkflowContext | undefined
+      });
+      return {
+        plan,
+        display: formatReconnectPlanForOperator(plan)
+      };
+    });
+
+    // Classify rate limit condition
+    ctx.actions.register("classifyRateLimit", async (args: Record<string, unknown>) => {
+      const classification = classifyRateLimit({
+        providerId: args.providerId as string,
+        headers: args.headers as Record<string, string> | undefined,
+        statusCode: args.statusCode as number | undefined,
+        errorMessage: args.errorMessage as string | undefined,
+        attemptNumber: args.attemptNumber as number | undefined
+      });
+      return {
+        classification,
+        display: formatRateLimitForOperator(classification)
+      };
+    });
+
+    // Get certification criteria
+    ctx.data.register("certificationCriteria", async () => {
+      return { criteria: CERTIFICATION_CRITERIA };
+    });
   },
 
   async onHealth() {
-    return { status: "ok", message: "Plugin worker is running" };
+    return { 
+      status: "ok", 
+      message: "Plugin worker is running with connector capabilities",
+      version: "0.1.0"
+    };
   }
 });
 
