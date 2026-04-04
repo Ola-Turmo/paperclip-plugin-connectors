@@ -27,6 +27,10 @@ import {
   classifyRateLimit,
   formatRateLimitForOperator
 } from "./connectors/rate-limit.js";
+import {
+  formatReconciliationForOperator,
+  simulateReconciliation
+} from "./connectors/callback-reconciliation.js";
 
 const plugin = definePlugin({
   async setup(ctx) {
@@ -144,6 +148,54 @@ const plugin = definePlugin({
       return {
         classification,
         display: formatRateLimitForOperator(classification)
+      };
+    });
+
+    // Reconcile missed callbacks after provider or transport outage
+    ctx.actions.register("reconcileCallbacks", async (args: Record<string, unknown>) => {
+      const result = simulateReconciliation({
+        providerId: args.providerId as string,
+        gaps: (args.gaps as Array<{
+          eventType: string;
+          gapStart: string;
+          gapEnd: string;
+          reason:
+            | "provider_outage"
+            | "transport_failure"
+            | "endpoint_unavailable"
+            | "auth_expired"
+            | "rate_limited"
+            | "unknown";
+          replaySuccessRate: number;
+          estimatedMissedCount?: number;
+        }> | undefined) ?? []
+      });
+
+      return {
+        result,
+        display: formatReconciliationForOperator(result),
+        replaySummary: {
+          replayed: result.totalReplayed,
+          unresolved: result.totalUnresolved,
+          stateConsistent: result.stateConsistent
+        },
+        unresolvedItems: result.detectedGaps.flatMap((gap) =>
+          gap.unresolvedEvents.map((event) => ({
+            gapId: gap.id,
+            providerId: gap.providerId,
+            eventType: event.eventType,
+            eventId: event.id,
+            errorMessage: event.errorMessage ?? "Unknown replay failure",
+            recommendedHandling: "manual_review"
+          }))
+        ),
+        replayGuidance: result.recommendedActions.map((action) => ({
+          id: action.id,
+          type: action.type,
+          priority: action.priority,
+          required: action.required,
+          description: action.description
+        }))
       };
     });
 

@@ -112,6 +112,40 @@ describe("plugin scaffold", () => {
     expect(result.display).toContain("RATE LIMIT");
   });
 
+  it("reconciles missed callbacks through the plugin runtime surface", async () => {
+    const harness = createTestHarness({ manifest, capabilities: [...manifest.capabilities, "events.emit"] });
+    await plugin.definition.setup(harness.ctx);
+
+    const result = await harness.performAction<{
+      result: { status: string; totalReplayed: number; totalUnresolved: number; stateConsistent: boolean };
+      replaySummary: { replayed: number; unresolved: number; stateConsistent: boolean };
+      unresolvedItems: Array<{ eventId: string; recommendedHandling: string }>;
+      replayGuidance: Array<{ type: string; required: boolean }>;
+      display: string;
+    }>("reconcileCallbacks", {
+      providerId: "slack",
+      gaps: [
+        {
+          eventType: "message.created",
+          gapStart: "2026-04-03T10:00:00Z",
+          gapEnd: "2026-04-03T11:00:00Z",
+          reason: "provider_outage",
+          replaySuccessRate: 0.5,
+          estimatedMissedCount: 4
+        }
+      ]
+    });
+
+    expect(result.result.status).toBe("partial");
+    expect(result.result.totalReplayed).toBe(2);
+    expect(result.result.totalUnresolved).toBe(2);
+    expect(result.replaySummary.unresolved).toBe(2);
+    expect(result.unresolvedItems).toHaveLength(2);
+    expect(result.unresolvedItems[0]?.recommendedHandling).toBe("manual_review");
+    expect(result.replayGuidance.some((action) => action.type === "manual_review" && action.required)).toBe(true);
+    expect(result.display).toContain("CALLBACK RECONCILIATION REPORT");
+  });
+
   it("provides certification criteria", async () => {
     const harness = createTestHarness({ manifest, capabilities: [...manifest.capabilities, "events.emit"] });
     await plugin.definition.setup(harness.ctx);
