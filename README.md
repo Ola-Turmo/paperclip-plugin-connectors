@@ -1,6 +1,6 @@
 # @uos/plugin-connectors
 
-@uos/plugin-connectors owns connector policy, callback routing, auth flows, provider capability bindings, and the runtime surface that lets UOS speak to external systems. It exists so provider complexity is isolated, measurable, and governed instead of leaking across the platform.
+@uos/plugin-connectors is the provider-control plane for UOS. It owns auth flows, token lifecycle, callback routing, webhook handling, capability descriptors, and connector policy so provider complexity stays isolated instead of leaking into setup, operations, or tool plugins.
 
 Built as part of the UOS split workspace on top of [Paperclip](https://github.com/paperclipai/paperclip), which remains the upstream control-plane substrate.
 
@@ -14,20 +14,20 @@ Built as part of the UOS split workspace on top of [Paperclip](https://github.co
 
 ## Runtime Form
 
-- Split repo with package code as the source of truth and a Paperclip plugin scaffold available for worker, manifest, UI, and validation surfaces when the repo needs runtime or operator-facing behavior.
+- Plugin-first provider layer that exposes governed external-system access to the rest of UOS without swallowing app-specific tool logic.
 
 ## Highest-Value Workflows
 
-- Adding a new provider with explicit capability descriptors.
-- Diagnosing auth failures, callback mismatches, and drift after upstream changes.
-- Rolling connector versions forward safely with certification coverage.
-- Reconciling provider-side state with UOS expectations.
-- Hardening policy around scopes, retries, rate limits, and tenancy boundaries.
+- Add a new provider with explicit capability descriptors and clear write boundaries.
+- Diagnose auth failures, callback mismatches, or drift after upstream provider changes.
+- Roll connector versions forward safely with certification coverage.
+- Reconcile provider-side state with UOS expectations at the integration boundary.
+- Harden policy around scopes, retries, rate limits, tenancy boundaries, and fallback paths.
 
 ## Key Connections and Operating Surfaces
 
 - OAuth/OIDC providers, webhook gateways, API proxies, secret managers, callback endpoints, browser login flows, and provider admin consoles needed to establish or debug external connectivity.
-- Google Workspace, Slack, Discord, Teams, GitHub, Notion, Linear, Jira, HubSpot, Salesforce, Zendesk, Intercom, Stripe, X, LinkedIn, YouTube, TikTok, and analytics/data platforms whenever the connector layer must expose those systems to the wider UOS stack.
+- Google Workspace, Slack, Discord, Teams, GitHub, Notion, Linear, Jira, HubSpot, Salesforce, Zendesk, Intercom, Stripe, X, LinkedIn, YouTube, TikTok, and analytics platforms whenever the connector layer must expose those systems to the wider UOS stack.
 - Provider SDKs, REST/GraphQL specs, rate-limit guidance, audit logs, status pages, and error telemetry to keep integrations trustworthy under real-world load.
 - CSV import/export, browser-native admin workflows, and fallback operator queues when direct APIs are partial, under-scoped, or operationally weaker than a documented workaround.
 

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Paperclip connector plugin for Composio, GetXAPI, and runtime policy.",
+  "description": "Connector-control plugin for UOS auth flows, webhooks, callback routing, and provider policy.",
   "scripts": {
     "test": "node --test tests/smoke.test.mjs",
     "plugin:build": "node ./esbuild.config.mjs",
