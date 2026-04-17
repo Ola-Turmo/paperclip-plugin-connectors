@@ -4,6 +4,13 @@
 
 Built as part of the UOS split workspace on top of [Paperclip](https://github.com/paperclipai/paperclip), which remains the upstream control-plane substrate.
 
+## Boundary Summary
+
+- Owns provider auth, callback routing, webhook control, connector policy, and integration certification.
+- Depends on [uos-core](https://github.com/Ola-Turmo/uos-core) for shared contracts and compatibility rules.
+- Feeds install-time connector requirements into [uos-plugin-setup-studio](https://github.com/Ola-Turmo/uos-plugin-setup-studio).
+- Feeds health and exception signals into [uos-plugin-operations-cockpit](https://github.com/Ola-Turmo/uos-plugin-operations-cockpit) and stays narrower than the tool plugins.
+
 ## What This Repo Owns
 
 - Provider auth and token lifecycle management.
