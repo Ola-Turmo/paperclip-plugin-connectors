@@ -4,6 +4,13 @@
   "private": true,
   "type": "module",
   "description": "Connector-control plugin for UOS auth flows, webhooks, callback routing, and provider policy.",
+  "keywords": [
+    "uos",
+    "paperclip-plugin",
+    "connectors",
+    "webhooks",
+    "provider-control"
+  ],
   "scripts": {
     "test": "node --test tests/smoke.test.mjs",
     "plugin:build": "node ./esbuild.config.mjs",
