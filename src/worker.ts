@@ -42,6 +42,7 @@ import {
   type CompanyConnectionRecord,
   type CompanyConnectionStatus,
 } from "./company-connections.js";
+import { listConnectorQuickStartBundles, listConnectorQuickStarts } from "./quick-starts.js";
 
 async function loadCompanyConnections(ctx: PluginContext, companyId: string): Promise<CompanyConnectionRecord[]> {
   const state = await ctx.state.get({
@@ -174,6 +175,11 @@ const plugin = definePlugin({
         summary: summarizeCompanyConnections(connections),
       };
     });
+
+    ctx.data.register("quickStartCatalog", async () => ({
+      quickStarts: listConnectorQuickStarts(),
+      bundles: listConnectorQuickStartBundles(),
+    }));
 
     ctx.actions.register("upsertCompanyConnection", async (args: Record<string, unknown>) => {
       const companyId = assertCompanyId(args.companyId);
@@ -369,7 +375,7 @@ const plugin = definePlugin({
     return {
       status: "ok",
       message: "Plugin worker is running with connector capabilities and company-scoped account registry",
-      version: "0.2.0",
+      version: "0.3.0",
     };
   },
 });

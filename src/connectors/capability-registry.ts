@@ -15,6 +15,7 @@
 export type AuthModel = 
   | "oauth2"           // Standard OAuth 2.0 flow
   | "oauth2_client_credentials" // Client credentials grant
+  | "service_account"  // Service account / signed JWT flow
   | "api_key"          // API key authentication
   | "bearer_token"     // Bearer token authentication
   | "basic_auth"       // Basic username/password
@@ -319,6 +320,359 @@ const PROVIDER_CAPABILITIES: Record<string, ProviderCapabilityDescriptor> = {
       auditLoggingAvailable: true
     },
     lifecycleState: "stable"
+  },
+  
+  "x": {
+    providerId: "x",
+    displayName: "X / Twitter",
+    category: "social",
+    authModel: ["oauth2", "bearer_token"],
+    eventModel: "polling",
+    authEndpoints: {
+      authorization: "https://twitter.com/i/oauth2/authorize",
+      token: "https://api.x.com/2/oauth2/token",
+      refresh: "https://api.x.com/2/oauth2/token",
+    },
+    apiBaseUrl: "https://api.x.com/2",
+    scopeMatrix: {
+      scopes: {
+        "tweet.read": { description: "Read tweets", required: true, sensitive: false },
+        "tweet.write": { description: "Publish tweets", required: false, sensitive: false },
+        "users.read": { description: "Read profile information", required: true, sensitive: false },
+        "offline.access": { description: "Refresh tokens", required: false, sensitive: true },
+      }
+    },
+    writeBoundary: "own_resources",
+    rateLimit: {
+      requestsPerMinute: 60,
+      retryAfterHeader: "x-rate-limit-reset",
+      backoffStrategy: "fixed",
+    },
+    supportsTokenRefresh: true,
+    typicalTokenLifetimeSeconds: 7200,
+    callbackRequirements: {
+      requiresHTTPS: true,
+    },
+    retryPolicy: {
+      maxRetries: 3,
+      initialDelayMs: 1000,
+      maxDelayMs: 30000,
+      backoffMultiplier: 2,
+    },
+    certified: false,
+    lifecycleState: "beta",
+  },
+  
+  "instagram": {
+    providerId: "instagram",
+    displayName: "Instagram",
+    category: "social",
+    authModel: ["oauth2"],
+    eventModel: "webhook",
+    authEndpoints: {
+      authorization: "https://www.facebook.com/v22.0/dialog/oauth",
+      token: "https://graph.facebook.com/v22.0/oauth/access_token",
+    },
+    apiBaseUrl: "https://graph.facebook.com/v22.0",
+    scopeMatrix: {
+      scopes: {
+        "instagram_basic": { description: "Read basic profile and media", required: true, sensitive: false },
+        "instagram_content_publish": { description: "Publish media", required: false, sensitive: false },
+        "pages_manage_metadata": { description: "Manage linked page metadata", required: false, sensitive: true },
+      }
+    },
+    writeBoundary: "own_resources",
+    rateLimit: {
+      requestsPerMinute: 200,
+      retryAfterHeader: "x-app-usage",
+      backoffStrategy: "exponential",
+    },
+    supportsTokenRefresh: true,
+    typicalTokenLifetimeSeconds: 5184000,
+    webhookSecretHeader: "X-Hub-Signature-256",
+    callbackRequirements: {
+      requiresHTTPS: true,
+    },
+    retryPolicy: {
+      maxRetries: 3,
+      initialDelayMs: 1000,
+      maxDelayMs: 30000,
+      backoffMultiplier: 2,
+    },
+    certified: false,
+    lifecycleState: "beta",
+  },
+
+  "facebook": {
+    providerId: "facebook",
+    displayName: "Facebook",
+    category: "social",
+    authModel: ["oauth2"],
+    eventModel: "webhook",
+    authEndpoints: {
+      authorization: "https://www.facebook.com/v22.0/dialog/oauth",
+      token: "https://graph.facebook.com/v22.0/oauth/access_token",
+    },
+    apiBaseUrl: "https://graph.facebook.com/v22.0",
+    scopeMatrix: {
+      scopes: {
+        "pages_show_list": { description: "List managed pages", required: true, sensitive: false },
+        "pages_manage_posts": { description: "Publish posts", required: false, sensitive: false },
+        "pages_read_engagement": { description: "Read engagement", required: false, sensitive: false },
+        "business_management": { description: "Manage business assets", required: false, sensitive: true },
+      }
+    },
+    writeBoundary: "own_resources",
+    rateLimit: {
+      requestsPerMinute: 200,
+      retryAfterHeader: "x-app-usage",
+      backoffStrategy: "exponential",
+    },
+    supportsTokenRefresh: true,
+    typicalTokenLifetimeSeconds: 5184000,
+    webhookSecretHeader: "X-Hub-Signature-256",
+    callbackRequirements: {
+      requiresHTTPS: true,
+    },
+    retryPolicy: {
+      maxRetries: 3,
+      initialDelayMs: 1000,
+      maxDelayMs: 30000,
+      backoffMultiplier: 2,
+    },
+    certified: false,
+    lifecycleState: "beta",
+  },
+
+  "linkedin": {
+    providerId: "linkedin",
+    displayName: "LinkedIn",
+    category: "social",
+    authModel: ["oauth2"],
+    eventModel: "polling",
+    authEndpoints: {
+      authorization: "https://www.linkedin.com/oauth/v2/authorization",
+      token: "https://www.linkedin.com/oauth/v2/accessToken",
+    },
+    apiBaseUrl: "https://api.linkedin.com/v2",
+    scopeMatrix: {
+      scopes: {
+        "r_basicprofile": { description: "Read basic profile", required: true, sensitive: true },
+        "r_organization_social": { description: "Read organization social data", required: false, sensitive: false },
+        "w_organization_social": { description: "Publish organization posts", required: false, sensitive: false },
+      }
+    },
+    writeBoundary: "own_resources",
+    rateLimit: {
+      requestsPerMinute: 100,
+      backoffStrategy: "fixed",
+    },
+    supportsTokenRefresh: false,
+    typicalTokenLifetimeSeconds: 5184000,
+    callbackRequirements: {
+      requiresHTTPS: true,
+    },
+    retryPolicy: {
+      maxRetries: 3,
+      initialDelayMs: 1000,
+      maxDelayMs: 30000,
+      backoffMultiplier: 2,
+    },
+    certified: false,
+    lifecycleState: "beta",
+  },
+
+  "youtube": {
+    providerId: "youtube",
+    displayName: "YouTube",
+    category: "social",
+    authModel: ["oauth2"],
+    eventModel: "polling",
+    authEndpoints: {
+      authorization: "https://accounts.google.com/o/oauth2/v2/auth",
+      token: "https://oauth2.googleapis.com/token",
+      refresh: "https://oauth2.googleapis.com/token",
+    },
+    apiBaseUrl: "https://www.googleapis.com/youtube/v3",
+    scopeMatrix: {
+      scopes: {
+        "youtube.readonly": { description: "Read channel and video data", required: true, sensitive: false },
+        "youtube.upload": { description: "Upload videos", required: false, sensitive: false },
+        "youtube.force-ssl": { description: "Manage comments and moderation", required: false, sensitive: true },
+      }
+    },
+    writeBoundary: "own_resources",
+    rateLimit: {
+      requestsPerMinute: 100,
+      backoffStrategy: "fixed",
+    },
+    supportsTokenRefresh: true,
+    typicalTokenLifetimeSeconds: 3600,
+    callbackRequirements: {
+      requiresHTTPS: true,
+    },
+    retryPolicy: {
+      maxRetries: 3,
+      initialDelayMs: 1000,
+      maxDelayMs: 30000,
+      backoffMultiplier: 2,
+    },
+    certified: false,
+    lifecycleState: "beta",
+  },
+
+  "tiktok": {
+    providerId: "tiktok",
+    displayName: "TikTok",
+    category: "social",
+    authModel: ["oauth2"],
+    eventModel: "polling",
+    authEndpoints: {
+      authorization: "https://www.tiktok.com/v2/auth/authorize/",
+      token: "https://open.tiktokapis.com/v2/oauth/token/",
+      refresh: "https://open.tiktokapis.com/v2/oauth/token/",
+    },
+    apiBaseUrl: "https://open.tiktokapis.com/v2",
+    scopeMatrix: {
+      scopes: {
+        "user.info.basic": { description: "Read basic user profile", required: true, sensitive: false },
+        "video.list": { description: "Read published videos", required: false, sensitive: false },
+        "video.publish": { description: "Publish videos", required: false, sensitive: false },
+      }
+    },
+    writeBoundary: "own_resources",
+    rateLimit: {
+      requestsPerMinute: 100,
+      backoffStrategy: "fixed",
+    },
+    supportsTokenRefresh: true,
+    typicalTokenLifetimeSeconds: 86400,
+    callbackRequirements: {
+      requiresHTTPS: true,
+    },
+    retryPolicy: {
+      maxRetries: 3,
+      initialDelayMs: 1000,
+      maxDelayMs: 30000,
+      backoffMultiplier: 2,
+    },
+    certified: false,
+    lifecycleState: "beta",
+  },
+
+  "gmail": {
+    providerId: "gmail",
+    displayName: "Gmail",
+    category: "communication",
+    authModel: ["oauth2"],
+    eventModel: "polling",
+    authEndpoints: {
+      authorization: "https://accounts.google.com/o/oauth2/v2/auth",
+      token: "https://oauth2.googleapis.com/token",
+      refresh: "https://oauth2.googleapis.com/token",
+    },
+    apiBaseUrl: "https://gmail.googleapis.com/gmail/v1",
+    scopeMatrix: {
+      scopes: {
+        "gmail.readonly": { description: "Read mail", required: true, sensitive: true },
+        "gmail.send": { description: "Send mail", required: false, sensitive: true },
+        "gmail.modify": { description: "Modify labels and state", required: false, sensitive: true },
+      }
+    },
+    writeBoundary: "own_resources",
+    rateLimit: {
+      requestsPerMinute: 250,
+      backoffStrategy: "exponential",
+    },
+    supportsTokenRefresh: true,
+    typicalTokenLifetimeSeconds: 3600,
+    callbackRequirements: {
+      requiresHTTPS: true,
+    },
+    retryPolicy: {
+      maxRetries: 3,
+      initialDelayMs: 1000,
+      maxDelayMs: 30000,
+      backoffMultiplier: 2,
+    },
+    certified: false,
+    lifecycleState: "beta",
+  },
+
+  "google-analytics": {
+    providerId: "google-analytics",
+    displayName: "Google Analytics",
+    category: "analytics",
+    authModel: ["oauth2", "service_account"],
+    eventModel: "batch",
+    authEndpoints: {
+      authorization: "https://accounts.google.com/o/oauth2/v2/auth",
+      token: "https://oauth2.googleapis.com/token",
+      refresh: "https://oauth2.googleapis.com/token",
+    },
+    apiBaseUrl: "https://analyticsdata.googleapis.com/v1beta",
+    scopeMatrix: {
+      scopes: {
+        "analytics.readonly": { description: "Read analytics properties", required: true, sensitive: true },
+      }
+    },
+    writeBoundary: "read_only",
+    rateLimit: {
+      requestsPerMinute: 120,
+      backoffStrategy: "fixed",
+    },
+    supportsTokenRefresh: true,
+    typicalTokenLifetimeSeconds: 3600,
+    callbackRequirements: {
+      requiresHTTPS: true,
+    },
+    retryPolicy: {
+      maxRetries: 3,
+      initialDelayMs: 1000,
+      maxDelayMs: 30000,
+      backoffMultiplier: 2,
+    },
+    certified: false,
+    lifecycleState: "beta",
+  },
+
+  "meta-ads": {
+    providerId: "meta-ads",
+    displayName: "Meta Ads",
+    category: "marketing",
+    authModel: ["oauth2"],
+    eventModel: "batch",
+    authEndpoints: {
+      authorization: "https://www.facebook.com/v22.0/dialog/oauth",
+      token: "https://graph.facebook.com/v22.0/oauth/access_token",
+    },
+    apiBaseUrl: "https://graph.facebook.com/v22.0",
+    scopeMatrix: {
+      scopes: {
+        "ads_read": { description: "Read ad account data", required: true, sensitive: true },
+        "ads_management": { description: "Manage campaigns", required: false, sensitive: true },
+        "business_management": { description: "Manage business assets", required: false, sensitive: true },
+      }
+    },
+    writeBoundary: "limited_resources",
+    rateLimit: {
+      requestsPerMinute: 200,
+      retryAfterHeader: "x-business-use-case-usage",
+      backoffStrategy: "exponential",
+    },
+    supportsTokenRefresh: true,
+    typicalTokenLifetimeSeconds: 5184000,
+    callbackRequirements: {
+      requiresHTTPS: true,
+    },
+    retryPolicy: {
+      maxRetries: 3,
+      initialDelayMs: 1000,
+      maxDelayMs: 30000,
+      backoffMultiplier: 2,
+    },
+    certified: false,
+    lifecycleState: "beta",
   },
   
   "discord": {

@@ -59,6 +59,32 @@ type ProviderCatalogResponse = {
   providers: ProviderCatalogRow[];
 };
 
+type QuickStartRow = {
+  id: string;
+  providerId: string;
+  title: string;
+  subtitle: string;
+  usage: string;
+  suggestedLabel: string;
+  accountHint: string;
+  scopes: string[];
+  channels: string[];
+  notes: string;
+};
+
+type QuickStartBundle = {
+  id: string;
+  title: string;
+  subtitle: string;
+  quickStartIds: string[];
+  quickStarts: QuickStartRow[];
+};
+
+type QuickStartCatalogResponse = {
+  quickStarts: QuickStartRow[];
+  bundles: QuickStartBundle[];
+};
+
 type EditableConnection = {
   id?: string;
   providerId: string;
@@ -144,6 +170,22 @@ function toEditableConnection(record: CompanyConnectionRecord): EditableConnecti
   };
 }
 
+function draftFromQuickStart(quickStart: QuickStartRow): EditableConnection {
+  return {
+    providerId: quickStart.providerId,
+    label: quickStart.suggestedLabel,
+    accountIdentifier: "",
+    usage: quickStart.usage,
+    status: "draft",
+    scopes: listToCsv(quickStart.scopes),
+    channels: listToCsv(quickStart.channels),
+    primarySecretRef: "",
+    refreshSecretRef: "",
+    webhookSecretRef: "",
+    notes: quickStart.notes,
+  };
+}
+
 function SectionTitle(props: { title: string; subtitle?: string }) {
   return (
     <div style={{ display: "grid", gap: 4 }}>
@@ -190,6 +232,57 @@ function RegistrySummary(props: { summary: CompanyConnectionsResponse["summary"]
   );
 }
 
+function QuickStartPicker(props: {
+  quickStarts: QuickStartRow[];
+  bundles: QuickStartBundle[];
+  onChoose(quickStart: QuickStartRow): void;
+}) {
+  return (
+    <div style={{ ...CARD_STYLE, display: "grid", gap: 14 }}>
+      <SectionTitle
+        title="Quick Connect"
+        subtitle="Start from a company-scoped preset instead of filling every field manually."
+      />
+      {props.bundles.map((bundle) => (
+        <div key={bundle.id} style={{ display: "grid", gap: 8 }}>
+          <div>
+            <strong style={{ fontSize: 14 }}>{bundle.title}</strong>
+            <div style={{ color: "#586173", fontSize: 13 }}>{bundle.subtitle}</div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
+            {bundle.quickStarts.map((quickStart) => (
+              <button
+                key={quickStart.id}
+                onClick={() => props.onChoose(quickStart)}
+                style={{
+                  textAlign: "left",
+                  border: "1px solid rgba(0,0,0,0.08)",
+                  borderRadius: 12,
+                  padding: 12,
+                  background: "rgba(249,250,251,0.95)",
+                  display: "grid",
+                  gap: 6,
+                  cursor: "pointer",
+                }}
+              >
+                <strong>{quickStart.title}</strong>
+                <div style={{ color: "#586173", fontSize: 13 }}>{quickStart.subtitle}</div>
+                <div style={{ color: "#374151", fontSize: 12 }}>
+                  {quickStart.providerId} · {quickStart.usage}
+                </div>
+                <div style={{ color: "#6b7280", fontSize: 12 }}>Account: {quickStart.accountHint}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+      <div style={{ color: "#586173", fontSize: 12 }}>
+        Common providers available: {props.quickStarts.map((entry) => entry.providerId).join(", ")}
+      </div>
+    </div>
+  );
+}
+
 function ConnectionEditor(props: {
   companyId: string;
   providers: ProviderCatalogRow[];
@@ -201,6 +294,7 @@ function ConnectionEditor(props: {
   const save = usePluginAction("upsertCompanyConnection");
   const toast = usePluginToast();
   const [saving, setSaving] = useState(false);
+  const provider = props.providers.find((entry) => entry.providerId === props.selected.providerId);
 
   async function handleSave() {
     setSaving(true);
@@ -247,6 +341,14 @@ function ConnectionEditor(props: {
         title={props.selected.id ? "Edit company account" : "Add company account"}
         subtitle="Store the metadata here, keep real credentials in company secrets, and never reuse one company account record across unrelated brands unless you mean to."
       />
+      {provider ? (
+        <div style={{ padding: 12, borderRadius: 10, background: "rgba(248,250,252,0.95)", border: "1px solid rgba(0,0,0,0.06)" }}>
+          <div style={{ fontWeight: 700 }}>{provider.displayName}</div>
+          <div style={{ color: "#586173", fontSize: 13 }}>
+            Category: {provider.category} · Auth: {provider.authModel.join(", ")} · Write boundary: {provider.writeBoundary}
+          </div>
+        </div>
+      ) : null}
       <div style={{ display: "grid", gap: 10 }}>
         <label>
           <div>Provider</div>
@@ -431,6 +533,7 @@ function ConnectionsTable(props: {
 
 function CompanyConnectionsManager(props: { companyId: string | null }) {
   const providerCatalog = usePluginData<ProviderCatalogResponse>("providerCatalog", {});
+  const quickStartCatalog = usePluginData<QuickStartCatalogResponse>("quickStartCatalog", {});
   const connections = usePluginData<CompanyConnectionsResponse>(
     "companyConnections",
     props.companyId ? { companyId: props.companyId } : {},
@@ -447,12 +550,16 @@ function CompanyConnectionsManager(props: { companyId: string | null }) {
     return <CompanyScopedNotice companyId={props.companyId} />;
   }
 
-  if (providerCatalog.loading || connections.loading) {
+  if (providerCatalog.loading || quickStartCatalog.loading || connections.loading) {
     return <div style={CARD_STYLE}>Loading company connector registry…</div>;
   }
 
   if (providerCatalog.error) {
     return <div style={CARD_STYLE}>Provider catalog error: {providerCatalog.error.message}</div>;
+  }
+
+  if (quickStartCatalog.error) {
+    return <div style={CARD_STYLE}>Quick-start catalog error: {quickStartCatalog.error.message}</div>;
   }
 
   if (connections.error) {
@@ -463,6 +570,11 @@ function CompanyConnectionsManager(props: { companyId: string | null }) {
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
+      <QuickStartPicker
+        quickStarts={quickStartCatalog.data?.quickStarts ?? []}
+        bundles={quickStartCatalog.data?.bundles ?? []}
+        onChoose={(quickStart) => setDraft(draftFromQuickStart(quickStart))}
+      />
       <RegistrySummary summary={connections.data?.summary ?? {
         totalConnections: 0,
         statusCounts: {},

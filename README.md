@@ -31,7 +31,21 @@ Built as part of the UOS split workspace on top of [Paperclip](https://github.co
 
 - Company dashboard widget summarizing the current company’s connected accounts.
 - Company plugin page for adding and editing account records.
+- Quick Connect presets for common company account families such as Instagram, X, Facebook, LinkedIn, YouTube, TikTok, Gmail, GitHub, GA4, and Meta Ads.
+- Starter bundles for common company stacks such as social brand surfaces, engineering surfaces, and growth/analytics surfaces.
 - Settings page documenting the isolation rules and recommended operating pattern.
+
+## Fastest Setup Pattern
+
+1. Open the plugin inside the target company.
+2. Choose a Quick Connect preset such as `Instagram brand account`, `X / Twitter brand account`, `GitHub org or repo access`, or `Gmail operations`.
+3. Fill only the company-specific values:
+   - account identifier
+   - company secret refs
+   - any extra scopes or channels
+4. Save the record.
+
+This keeps setup fast without falling back to unsafe instance-wide defaults.
 
 ## Runtime Form
 
