@@ -13,6 +13,8 @@ const manifest: PaperclipPluginManifestV1 = {
     "plugin.state.read",
     "plugin.state.write",
     "ui.dashboardWidget.register",
+    "ui.page.register",
+    "instance.settings.register",
   ],
   entrypoints: {
     worker: './dist/worker.js',
@@ -25,6 +27,19 @@ const manifest: PaperclipPluginManifestV1 = {
         id: "health-widget",
         displayName: "Plugin Connectors Health",
         exportName: "DashboardWidget"
+      },
+      {
+        type: "page",
+        id: "company-connectors-page",
+        displayName: "Company Connectors",
+        exportName: "CompanyConnectorsPage",
+        routePath: "accounts"
+      },
+      {
+        type: "settingsPage",
+        id: "connectors-settings-page",
+        displayName: "Connector Settings",
+        exportName: "ConnectorSettingsPage"
       }
     ]
   }

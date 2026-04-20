@@ -155,6 +155,41 @@ describe("plugin scaffold", () => {
     expect(result.criteria[0].id).toBeDefined();
     expect(result.criteria[0].name).toBeDefined();
   });
+
+  it("stores connector accounts strictly in company scope", async () => {
+    const harness = createTestHarness({ manifest, capabilities: [...manifest.capabilities, "events.emit"] });
+    await plugin.definition.setup(harness.ctx);
+
+    const saved = await harness.performAction<{
+      companyId: string;
+      connection: { id: string; companyId: string; label: string };
+    }>("upsertCompanyConnection", {
+      companyId: "company-a",
+      connection: {
+        providerId: "slack",
+        label: "Kurs.ing Support Slack",
+        accountIdentifier: "kursing-support",
+        usage: "support",
+        status: "connected",
+      },
+    });
+
+    expect(saved.companyId).toBe("company-a");
+    expect(saved.connection.companyId).toBe("company-a");
+
+    const companyA = await harness.getData<{
+      companyId: string;
+      connections: Array<{ label: string; companyId: string }>;
+    }>("companyConnections", { companyId: "company-a" });
+    const companyB = await harness.getData<{
+      companyId: string;
+      connections: Array<{ label: string; companyId: string }>;
+    }>("companyConnections", { companyId: "company-b" });
+
+    expect(companyA.connections).toHaveLength(1);
+    expect(companyA.connections[0]?.label).toBe("Kurs.ing Support Slack");
+    expect(companyB.connections).toHaveLength(0);
+  });
 });
 
 // Test connector modules directly

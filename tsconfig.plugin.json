@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "lib": [
       "ES2022",
       "DOM"
     ],
     "jsx": "react-jsx",
+    "types": ["node", "react"],
     "strict": true,
     "skipLibCheck": true,
     "declaration": true,
@@ -18,8 +19,7 @@
     "esModuleInterop": true
   },
   "include": [
-    "src/manifest.ts",
-    "src/worker.ts",
+    "src/**/*.ts",
     "src/ui/**/*.tsx",
     "tests/plugin.spec.ts"
   ],

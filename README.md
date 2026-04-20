@@ -1,6 +1,6 @@
 # @uos/plugin-connectors
 
-@uos/plugin-connectors is the provider-control plane for UOS. It owns auth flows, token lifecycle, callback routing, webhook handling, capability descriptors, and connector policy so provider complexity stays isolated instead of leaking into setup, operations, or tool plugins.
+@uos/plugin-connectors is the provider-control plane for UOS. It owns auth flows, token lifecycle, callback routing, webhook handling, capability descriptors, connector policy, and a company-scoped external-account registry so provider complexity stays isolated instead of leaking into setup, operations, or tool plugins.
 
 Built as part of the UOS split workspace on top of [Paperclip](https://github.com/paperclipai/paperclip), which remains the upstream control-plane substrate.
 
@@ -18,6 +18,20 @@ Built as part of the UOS split workspace on top of [Paperclip](https://github.co
 - Capability declaration, policy enforcement, and runtime bindings.
 - Connector health telemetry, error classification, and certification.
 - Compatibility management for upstream provider API changes.
+- A company-scoped account registry for mapping Gmail, X, LinkedIn, analytics, CRM, commerce, and support accounts to the correct Paperclip company without cross-company spillover.
+
+## Company Isolation Model
+
+- Every connector account record is stored in company scope, never in instance scope.
+- The plugin page is designed to be used from inside a company route.
+- Credentials should stay in Paperclip company secrets; connector records store metadata plus secret references.
+- If two companies intentionally share one external account, that reuse should be explicit in two separate company records instead of relying on hidden global defaults.
+
+## Operator Experience
+
+- Company dashboard widget summarizing the current company’s connected accounts.
+- Company plugin page for adding and editing account records.
+- Settings page documenting the isolation rules and recommended operating pattern.
 
 ## Runtime Form
 
