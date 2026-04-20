@@ -3,7 +3,7 @@ import type { PaperclipPluginManifestV1 } from "@paperclipai/plugin-sdk";
 const manifest: PaperclipPluginManifestV1 = {
   id: "uos.plugin-connectors",
   apiVersion: 1,
-  version: "0.1.0",
+  version: "0.2.0",
   displayName: "Plugin Connectors",
   description: "Paperclip connector plugin for Composio, GetXAPI, and runtime policy.",
   author: "turmo.dev",
