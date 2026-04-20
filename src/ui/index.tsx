@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useMemo, useState, type CSSProperties } from "react";
 import {
   usePluginAction,
