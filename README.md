@@ -31,8 +31,9 @@ Built as part of the UOS split workspace on top of [Paperclip](https://github.co
 
 - Company dashboard widget summarizing the current company’s connected accounts.
 - Company plugin page for adding and editing account records.
-- Quick Connect presets for common company account families such as Instagram, X, Facebook, LinkedIn, YouTube, TikTok, Gmail, GitHub, GA4, and Meta Ads.
+- Quick Connect presets for common company account families such as Instagram, X, Facebook, LinkedIn, YouTube, TikTok, Gmail, GitHub, GA4, Meta Ads, Stripe, Cloudflare, Render, Supabase, Clerk, Convex, and PostHog.
 - Starter bundles for common company stacks such as social brand surfaces, engineering surfaces, and growth/analytics surfaces.
+- Starter bundles for common company stacks such as social brand surfaces, engineering surfaces, growth/analytics, platform operations, app backends, and commerce.
 - Settings page documenting the isolation rules and recommended operating pattern.
 
 ## Fastest Setup Pattern

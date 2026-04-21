@@ -636,6 +636,38 @@ const PROVIDER_CAPABILITIES: Record<string, ProviderCapabilityDescriptor> = {
     lifecycleState: "beta",
   },
 
+  "posthog": {
+    providerId: "posthog",
+    displayName: "PostHog",
+    category: "analytics",
+    authModel: ["api_key", "bearer_token"],
+    eventModel: "batch",
+    apiBaseUrl: "https://us.i.posthog.com",
+    scopeMatrix: {
+      scopes: {
+        "project:read": { description: "Read product analytics and project metadata", required: true, sensitive: true },
+        "project:write": { description: "Manage project settings and feature flags", required: false, sensitive: true },
+      }
+    },
+    writeBoundary: "limited_resources",
+    rateLimit: {
+      requestsPerMinute: 240,
+      backoffStrategy: "fixed",
+    },
+    supportsTokenRefresh: false,
+    callbackRequirements: {
+      requiresHTTPS: true,
+    },
+    retryPolicy: {
+      maxRetries: 3,
+      initialDelayMs: 1000,
+      maxDelayMs: 30000,
+      backoffMultiplier: 2,
+    },
+    certified: false,
+    lifecycleState: "beta",
+  },
+
   "meta-ads": {
     providerId: "meta-ads",
     displayName: "Meta Ads",
@@ -854,6 +886,177 @@ const PROVIDER_CAPABILITIES: Record<string, ProviderCapabilityDescriptor> = {
       auditLoggingAvailable: true
     },
     lifecycleState: "stable"
+  },
+
+  "cloudflare": {
+    providerId: "cloudflare",
+    displayName: "Cloudflare",
+    category: "development",
+    authModel: ["bearer_token", "api_key"],
+    eventModel: "webhook",
+    apiBaseUrl: "https://api.cloudflare.com/client/v4",
+    scopeMatrix: {
+      scopes: {
+        "zone:read": { description: "Read DNS zones and settings", required: true, sensitive: false },
+        "workers:write": { description: "Deploy and update Workers/Pages resources", required: false, sensitive: true },
+        "account:read": { description: "Read account metadata", required: false, sensitive: true },
+        "analytics:read": { description: "Read web analytics and edge telemetry", required: false, sensitive: false },
+      }
+    },
+    writeBoundary: "limited_resources",
+    rateLimit: {
+      requestsPerMinute: 1200,
+      retryAfterHeader: "Retry-After",
+      backoffStrategy: "exponential",
+    },
+    supportsTokenRefresh: false,
+    webhookSecretHeader: "Cf-Webhook-Signature",
+    callbackRequirements: {
+      requiresHTTPS: true,
+    },
+    retryPolicy: {
+      maxRetries: 3,
+      initialDelayMs: 1000,
+      maxDelayMs: 30000,
+      backoffMultiplier: 2,
+    },
+    certified: false,
+    lifecycleState: "beta",
+  },
+
+  "render": {
+    providerId: "render",
+    displayName: "Render",
+    category: "development",
+    authModel: ["bearer_token", "api_key"],
+    eventModel: "webhook",
+    apiBaseUrl: "https://api.render.com/v1",
+    scopeMatrix: {
+      scopes: {
+        "services:read": { description: "Read service and deploy metadata", required: true, sensitive: false },
+        "services:write": { description: "Update service config and trigger deploys", required: false, sensitive: true },
+        "blueprints:write": { description: "Manage blueprints and infra definitions", required: false, sensitive: true },
+      }
+    },
+    writeBoundary: "limited_resources",
+    rateLimit: {
+      requestsPerMinute: 300,
+      retryAfterHeader: "Retry-After",
+      backoffStrategy: "fixed",
+    },
+    supportsTokenRefresh: false,
+    callbackRequirements: {
+      requiresHTTPS: true,
+    },
+    retryPolicy: {
+      maxRetries: 3,
+      initialDelayMs: 1000,
+      maxDelayMs: 20000,
+      backoffMultiplier: 2,
+    },
+    certified: false,
+    lifecycleState: "beta",
+  },
+
+  "supabase": {
+    providerId: "supabase",
+    displayName: "Supabase",
+    category: "data",
+    authModel: ["api_key", "bearer_token", "service_account"],
+    eventModel: "webhook",
+    apiBaseUrl: "https://api.supabase.com/v1",
+    scopeMatrix: {
+      scopes: {
+        "project:read": { description: "Read project configuration and health", required: true, sensitive: false },
+        "service_role": { description: "Read/write database and auth state through privileged APIs", required: false, sensitive: true },
+        "storage:write": { description: "Manage storage buckets and objects", required: false, sensitive: true },
+      }
+    },
+    writeBoundary: "all_resources",
+    rateLimit: {
+      requestsPerMinute: 300,
+      backoffStrategy: "exponential",
+    },
+    supportsTokenRefresh: false,
+    callbackRequirements: {
+      requiresHTTPS: true,
+    },
+    retryPolicy: {
+      maxRetries: 3,
+      initialDelayMs: 1000,
+      maxDelayMs: 20000,
+      backoffMultiplier: 2,
+    },
+    certified: false,
+    lifecycleState: "beta",
+  },
+
+  "clerk": {
+    providerId: "clerk",
+    displayName: "Clerk",
+    category: "development",
+    authModel: ["bearer_token", "api_key", "webhook_secret"],
+    eventModel: "webhook",
+    apiBaseUrl: "https://api.clerk.com/v1",
+    scopeMatrix: {
+      scopes: {
+        "users:read": { description: "Read users and session metadata", required: true, sensitive: true },
+        "users:write": { description: "Manage users and auth settings", required: false, sensitive: true },
+        "webhooks": { description: "Receive auth lifecycle webhooks", required: false, sensitive: false },
+      }
+    },
+    writeBoundary: "limited_resources",
+    rateLimit: {
+      requestsPerMinute: 300,
+      retryAfterHeader: "Retry-After",
+      backoffStrategy: "fixed",
+    },
+    supportsTokenRefresh: false,
+    webhookSecretHeader: "svix-signature",
+    callbackRequirements: {
+      requiresHTTPS: true,
+    },
+    retryPolicy: {
+      maxRetries: 3,
+      initialDelayMs: 1000,
+      maxDelayMs: 20000,
+      backoffMultiplier: 2,
+    },
+    certified: false,
+    lifecycleState: "beta",
+  },
+
+  "convex": {
+    providerId: "convex",
+    displayName: "Convex",
+    category: "data",
+    authModel: ["api_key", "bearer_token"],
+    eventModel: "webhook",
+    apiBaseUrl: "https://api.convex.dev",
+    scopeMatrix: {
+      scopes: {
+        "deployment:read": { description: "Read deployment state and functions", required: true, sensitive: false },
+        "deployment:write": { description: "Deploy functions and manage env vars", required: false, sensitive: true },
+        "data:write": { description: "Run privileged mutations and imports", required: false, sensitive: true },
+      }
+    },
+    writeBoundary: "all_resources",
+    rateLimit: {
+      requestsPerMinute: 240,
+      backoffStrategy: "fixed",
+    },
+    supportsTokenRefresh: false,
+    callbackRequirements: {
+      requiresHTTPS: true,
+    },
+    retryPolicy: {
+      maxRetries: 3,
+      initialDelayMs: 1000,
+      maxDelayMs: 20000,
+      backoffMultiplier: 2,
+    },
+    certified: false,
+    lifecycleState: "beta",
   },
   
   "jira": {
