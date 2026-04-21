@@ -268,7 +268,7 @@ function QuickStartPicker(props: {
                 <strong>{quickStart.title}</strong>
                 <div style={{ color: "#586173", fontSize: 13 }}>{quickStart.subtitle}</div>
                 <div style={{ color: "#374151", fontSize: 12 }}>
-                  {quickStart.providerId} · {quickStart.usage}
+                  {quickStart.providerId} | {quickStart.usage}
                 </div>
                 <div style={{ color: "#6b7280", fontSize: 12 }}>Account: {quickStart.accountHint}</div>
               </button>
@@ -345,7 +345,7 @@ function ConnectionEditor(props: {
         <div style={{ padding: 12, borderRadius: 10, background: "rgba(248,250,252,0.95)", border: "1px solid rgba(0,0,0,0.06)" }}>
           <div style={{ fontWeight: 700 }}>{provider.displayName}</div>
           <div style={{ color: "#586173", fontSize: 13 }}>
-            Category: {provider.category} · Auth: {provider.authModel.join(", ")} · Write boundary: {provider.writeBoundary}
+            Category: {provider.category} | Auth: {provider.authModel.join(", ")} | Write boundary: {provider.writeBoundary}
           </div>
         </div>
       ) : null}
@@ -515,9 +515,9 @@ function ConnectionsTable(props: {
               <strong>{record.label}</strong>
               <span>{record.status}</span>
             </div>
-            <div>{record.providerId} · {record.accountIdentifier}</div>
+            <div>{record.providerId} | {record.accountIdentifier}</div>
             <div style={{ color: "#586173", fontSize: 13 }}>
-              Usage: {record.usage} · Scopes: {record.scopes.join(", ") || "none listed"}
+              Usage: {record.usage} | Scopes: {record.scopes.join(", ") || "none listed"}
             </div>
             {record.notes ? <div style={{ color: "#586173", fontSize: 13 }}>{record.notes}</div> : null}
             <div style={{ display: "flex", gap: 8 }}>
@@ -619,14 +619,14 @@ export function DashboardWidget(props: PluginWidgetProps) {
     );
   }
 
-  if (loading) return <div style={CARD_STYLE}>Loading connector health…</div>;
+  if (loading) return <div style={CARD_STYLE}>Loading connector health...</div>;
   if (error) return <div style={CARD_STYLE}>Plugin error: {error.message}</div>;
 
   return (
     <div style={{ ...CARD_STYLE, display: "grid", gap: 8 }}>
       <strong>Company Connectors</strong>
       <div>{data?.summary.totalConnections ?? 0} accounts scoped to this company</div>
-      <div>{data?.summary.statusCounts.connected ?? 0} connected · {data?.summary.statusCounts.needs_attention ?? 0} need attention</div>
+      <div>{data?.summary.statusCounts.connected ?? 0} connected | {data?.summary.statusCounts.needs_attention ?? 0} need attention</div>
       {data?.summary.warnings.length ? <div style={{ color: "#8a4b16" }}>{data.summary.warnings[0]}</div> : null}
       <div style={{ color: "#586173", fontSize: 12 }}>Use the Company Connectors page to keep Gmail, social, and other accounts isolated per company.</div>
     </div>
