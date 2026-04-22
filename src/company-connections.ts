@@ -56,6 +56,7 @@ export interface CompanyConnectionDraft {
     refresh?: string;
     webhook?: string;
   };
+  secretRef?: string;
   notes?: string;
   lastValidatedAt?: string | null;
   lastValidationMessage?: string | null;
@@ -92,12 +93,15 @@ function cleanStringArray(value: unknown): string[] {
 }
 
 function cleanSecretRefs(
-  input: CompanyConnectionDraft["secretRefs"] | undefined,
+  input: Pick<CompanyConnectionDraft, "secretRefs" | "secretRef">,
 ): CompanyConnectionRecord["secretRefs"] {
+  const primary =
+    cleanString(input.secretRefs?.primary) ||
+    cleanString(input.secretRef);
   return {
-    ...(cleanString(input?.primary) ? { primary: cleanString(input?.primary) } : {}),
-    ...(cleanString(input?.refresh) ? { refresh: cleanString(input?.refresh) } : {}),
-    ...(cleanString(input?.webhook) ? { webhook: cleanString(input?.webhook) } : {}),
+    ...(primary ? { primary } : {}),
+    ...(cleanString(input.secretRefs?.refresh) ? { refresh: cleanString(input.secretRefs?.refresh) } : {}),
+    ...(cleanString(input.secretRefs?.webhook) ? { webhook: cleanString(input.secretRefs?.webhook) } : {}),
   };
 }
 
@@ -139,7 +143,7 @@ export function normalizeCompanyConnection(
     status,
     scopes: cleanStringArray(input.scopes),
     channels: cleanStringArray(input.channels),
-    secretRefs: cleanSecretRefs(input.secretRefs),
+    secretRefs: cleanSecretRefs(input),
     notes: cleanString(input.notes),
     createdAt: nowIso,
     updatedAt: nowIso,
